@@ -5,14 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.CustomPID;
 
-/**
- * Manages the DriveTrain of the robot
- * Assumes 4-Wheel Mecanum, has support for both field centric drive and robot centric
- * PreReqs include the CustomPID class, also requires the names on the robot controller to match those in init method
- *
- */
 public class DriveTrain {
     private DcMotor fl;
     private DcMotor fr;
@@ -152,5 +145,43 @@ public class DriveTrain {
 
     public DcMotor getyOdom() {
         return yOdom;
+    }
+
+    /**
+     * @param xPid  The PID constants for the X direction
+     * @param yPid  The PID constants for the Y direction
+     * @param theta  The Angle that the robot should go(standard position)
+     * @param distance  The distance that the robot should go
+     */
+    public void driveToLocation(double[] xPid, double[] yPid, double theta, double distance) {
+        //Reset Encoders
+        this.xOdom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        this.yOdom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        this.xOdom.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        this.yOdom.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        //Initialize objects for robot tracking
+        CustomPID xPID = new CustomPID(xPid);
+        CustomPID yPID = new CustomPID(yPid);
+        double targetX = distance * Math.cos(Math.toRadians(theta));
+        double targetY = distance * Math.sin(Math.toRadians(theta));
+        xPID.setSetpoint(targetX);
+        yPID.setSetpoint(targetY);
+        Vector motion = new Vector();
+        double powerX = 0;
+        double powerY = 0;
+        double range = 50;
+
+        //while the x is out of range or y is out of range or the velocity is too fast
+        while(((Math.abs(xOdom.getCurrentPosition() - targetX)) > (range / 2.0)) ||
+                (Math.abs(yOdom.getCurrentPosition() - targetY) > (range / 2.0)) ||
+                (powerX > 0.24) || (powerY > 0.24)){
+            //use the Pid to calculate the Powers
+            powerX = xPID.calculateGivenRaw(this.xOdom.getCurrentPosition())[0];
+            powerY = yPID.calculateGivenRaw(-1 * this.xOdom.getCurrentPosition())[0];
+            //update the motion vector, run the move cmd
+            motion.setComps(new double[]{powerX, powerY});
+            moveInDirection(motion.theta(), motion.getMag());
+        }
     }
 }
