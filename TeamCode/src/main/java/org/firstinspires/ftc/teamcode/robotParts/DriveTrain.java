@@ -178,8 +178,8 @@ public class DriveTrain {
         xPID.setSetpoint(0);
         yPID.setSetpoint(0);
         Vector motion = new Vector();
-        double powerX = xPID.calculateGivenRaw(this.xOdom.getCurrentPosition())[0];
-        double powerY = yPID.calculateGivenRaw( this.yOdom.getCurrentPosition())[0];
+        double powerX;
+        double powerY;
         ElapsedTime timer = new ElapsedTime();
         //while the x is out of range or y is out of range or the velocity is too fast
         while(timer.seconds()<seconds){
@@ -192,12 +192,12 @@ public class DriveTrain {
             moveInDirection(motion.theta(), motion.getMag());
         }
     }
-    public void curveMove(double distance, double theta, double pocketDepth, double numSplits, double[] xPid, double[] yPid){
+    public void curveMove(double distance, double theta, double pocketDepth, double numSplits){
         double targetX = distance * Math.cos(Math.toRadians(theta));
         double targetY = distance * Math.sin(Math.toRadians(theta));
-        ArrayList<Vector> pathList= new ArrayList<Vector>();
+        ArrayList<Vector> pathList= new ArrayList<>();
         pathList.add(new Vector(targetX, targetY));
-        ArrayList<Vector> splits = new ArrayList<Vector>();
+        ArrayList<Vector> splits = new ArrayList<>();
         for (int i = 0; i < numSplits; i++) {
             for (int j = 0; j < pathList.size(); j++) {
                 Vector[] temps;
