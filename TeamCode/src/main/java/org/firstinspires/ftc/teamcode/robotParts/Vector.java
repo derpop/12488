@@ -47,4 +47,8 @@ public class Vector {
         this.comps = comps;
         this.mag = Math.hypot(this.comps[0], this.comps[1]);
     }
+
+    public double[] getComps() {
+        return comps;
+    }
 }

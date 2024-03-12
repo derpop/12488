@@ -21,7 +21,7 @@ public class DriveTrainTest extends LinearOpMode {
     public static double ki;
     public static double kd;
     private final double[] PidConstantsAngle = new double[]{1, 200, 0};
-    private final double[] PidConstantsDistance = new double[]{0.0005, 0.01, 0};
+    private final double[] PidConstantsDistance = new double[]{0.0005, 0.08, 0};
 
     private final DriveTrain dt = new DriveTrain();
     private final LinearLift lin = new LinearLift();
@@ -30,7 +30,7 @@ public class DriveTrainTest extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        dt.init(hardwareMap);
+        dt.init(hardwareMap, PidConstantsDistance, PidConstantsDistance,PidConstantsAngle);
         lin.init(hardwareMap);
         camera.init(hardwareMap);
         camera.setPipeline("red");
@@ -50,11 +50,13 @@ public class DriveTrainTest extends LinearOpMode {
                 toggle = !toggle;
             }
             if (gamepad1.a) {
-                dt.getToAngle(PidConstantsAngle, angle);
+                dt.getToAngle(angle);
             }
             if (gamepad1.b) {
-                dt.driveToLocation(PidConstantsDistance,PidConstantsDistance,angle,distance);
-
+                dt.driveToLocation(angle,distance);
+            }
+            if(gamepad1.x){
+                dt.stayPut(10, angle);
             }
             if (gamepad1.back && gamepad1.dpad_up) {
                 dt.reInitFieldCentric();
@@ -80,6 +82,8 @@ public class DriveTrainTest extends LinearOpMode {
             packet.put("Y", dt.getyOdom().getCurrentPosition());
             packet.put("Lin", lin.getPos());
             packet.put("Red", red);
+            packet.put("X setup", distance * Math.cos(Math.toRadians(angle)));
+            packet.put("Y setup", distance * Math.sin(Math.toRadians(angle)));
             dashboard.sendTelemetryPacket(packet);
             updateTelemetry(telemetry);
         }
